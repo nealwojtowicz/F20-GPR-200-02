@@ -1,0 +1,190 @@
+// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+
+// asPoint: promote a 3D vector into a 4D vector representing a point (w=1)
+//    point: input 3D vector
+vec4 asPoint(in vec3 point)
+{
+    return vec4(point, 1.0);
+}
+
+// asOffset: promote a 3D vector into a 4D vector representing an offset (w=0)
+//    offset: input 3D vector
+vec4 asOffset(in vec3 offset)
+{
+    return vec4(offset, 0.0);
+}
+
+// calcViewport: calculate the viewing plane (viewport) coordinate
+//    viewport:       output viewing plane coordinate
+//    ndc:            output normalized device coordinate
+//    uv:             output screen-space coordinate
+//    aspect:         output aspect ratio of screen
+//    resolutionInv:  output reciprocal of resolution
+//    viewportHeight: input height of viewing plane
+//    fragCoord:      input coordinate of current fragment (in pixels)
+//    resolution:     input resolution of screen (in pixels)
+void calcViewport(out vec3 viewport, out vec2 ndc, out vec2 uv,
+                  out float aspect, out vec2 resolutionInv,
+                  in float viewportHeight, in float focalLength,
+                  in vec2 fragCoord, in vec2 resolution)
+{
+    // inverse (reciprocal) resolution = 1 / resolution
+    resolutionInv = 1.0 / resolution;
+    
+    // aspect ratio = screen width / screen height
+    aspect = resolution.x * resolutionInv.y;
+
+    // uv = screen-space coordinate = [0, 1) = coord / resolution
+    uv = fragCoord * resolutionInv;
+
+    // ndc = normalized device coordinate = [-1, +1) = uv*2 - 1
+    ndc = uv * 2.0 - 1.0;
+
+    // viewport: x = [-aspect*h/2, +aspect*h/2), y = [-h/2, +h/2), z = -f
+    viewport = vec3(ndc * vec2(aspect, 1.0) * (viewportHeight * 0.5), -focalLength);
+}
+
+// calcRay: calculate the ray direction and origin for the current pixel
+//    rayDirection: output direction of ray from origin
+//    rayOrigin:    output origin point of ray
+//    viewport:     input viewing plane coordinate (use above function to calculate)
+//    focalLength:  input distance to viewing plane
+void calcRay(out vec4 rayDirection, out vec4 rayOrigin,
+             in vec3 eyePosition, in vec3 viewport)
+{
+    // ray origin relative to viewer is the origin
+    // w = 1 because it represents a point; can ignore when using
+    rayOrigin = asPoint(eyePosition);
+
+    // ray direction relative to origin is based on viewing plane coordinate
+    // w = 0 because it represents a direction; can ignore when using
+    rayDirection = asOffset(viewport - eyePosition);
+}
+
+/*
+bool checkSphere(out sSphere sphere, in vec4 center, in float radius)
+{
+    sphere.center = asPoint(center); //to make sure w = 1.0
+    if (radius > 0)
+    {
+    	sphere.radius = radius;
+        return true;
+    }
+    sphere.radius = 1.0;
+    return false;
+}
+*/ 
+
+struct sSphere
+{
+ 	vec4 center;
+    float radius;
+};
+    
+struct pointLight
+{
+    vec4 center;
+    vec4 color;
+    float intensity;
+};
+    
+//initializes a sphere
+void initSphere(out sSphere sphere, in vec3 center, in float radius)
+{
+    sphere.center = asPoint(center); //to make sure w = 1.0
+    sphere.radius = radius;
+}
+void initPointLight(out pointLight pL, in vec3 center, in vec4 color, in float intensity)
+{
+    pL.center = asPoint(center);
+    pL.color = color;
+    pL.intensity = intensity;
+}
+
+float length_squared(vec2 x)
+{
+ 	return dot(x, x);   
+}
+
+// calcColor: calculate the color of a pixel given a ray
+//    rayDirection: input ray direction
+//    rayOrigin:    input ray origin
+vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
+{
+    // SCENE
+    sSphere s;
+    initSphere(s, vec3(0.0, 0.0, -4.0), 0.5);
+    pointLight pL;
+    initPointLight(pL, vec3(1.0, 1.0, -4.0), vec4(1.0, 1.0, 1.0, 1.0), 1000.0);
+    
+    // TEST
+    vec3 dp; //displacement
+    dp.xy = rayDirection.xy - s.center.xy;
+    float lSqr = length_squared(dp.xy);
+    float rSqr = s.radius * s.radius;
+    
+    //if (length(dp.xy) <= s.radius)
+    if (lSqr <= rSqr) //if the length of the ray is inside the radius
+    {
+        //dp.z = s.radius * s.radius - (dp.x * dp.x + dp.y * dp.y);
+        dp.z = rSqr - lSqr;
+        
+        vec3 position = s.center.xyz + vec3(dp.x, dp.y, sqrt(dp.z));
+        
+        //vec3 normal = normalize(position - s.center.xyz);
+        vec3 normal = (position - s.center.xyz) / s.radius;
+        
+        vec3 light = normalize(pL.center.xyz - s.center.xyz);
+       
+        /*
+        vec3 diffuseCoe = max(vec3(0.0), normal * light);
+        vec3 dist = pL.center.xyz - s.center.xyz;
+        vec3 attenuation = vec3(1.0) / (1.0 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
+        vec3 diffuseInt = diffuseCoe * attenuation;
+		vec3 finalColor = diffuseInt * normal * pL.color;
+		return vec4(finalColor, 1.0);
+		*/        
+
+        float diffuseCoe = max(0.0, dot(normal, light));
+         
+        float dist = dot(pL.center.xyz, s.center.xyz);
+        
+        float attenuation = 1.0 / (1.0 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
+        
+        float diffuseInt = diffuseCoe * attenuation;
+        
+        vec4 finalColor = diffuseInt * (normal, 1.0) * pL.color;
+        
+        return finalColor;
+    }
+    
+	// BACKGROUND
+	const vec3 warm = vec3(0.8, 0.4, 0.2), cool = vec3(0.2, 0.4, 0.8);
+	//return vec4(mix(warm, cool, rayDirection.y), 1.0);
+    return vec4(0.5);
+}
+
+// mainImage: process the current pixel (exactly one call per pixel)
+//    fragColor: output final color for current pixel
+//    fragCoord: input location of current pixel in image (in pixels)
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    // viewing plane (viewport) info
+    vec3 viewport;
+    vec2 ndc, uv, resolutionInv;
+    float aspect;
+    const float viewportHeight = 2.0, focalLength = 1.0;
+
+    // ray
+    vec4 rayDirection, rayOrigin;
+
+    // setup
+    fragColor = vec4(0.0);
+    
+    calcViewport(viewport, ndc, uv, aspect, resolutionInv,
+    	             viewportHeight, focalLength,
+    	             fragCoord, iResolution.xy);
+    calcRay(rayDirection, rayOrigin, vec3(0.0), viewport);
+    
+    fragColor += calcColor(rayDirection, rayOrigin);
+}

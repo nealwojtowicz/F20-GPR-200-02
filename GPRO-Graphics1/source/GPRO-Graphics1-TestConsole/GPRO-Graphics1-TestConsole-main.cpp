@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "gpro/gpro-math/gproVector.h"
 
 
@@ -50,13 +49,74 @@ void testVector()
 	d = b + b;										// sum, init, assign			-> d = (2, 4, 6)
 	d = c + b + a;									// sum, init, sum, init, assign	-> d = (9, 12, 15)
 #endif	// __cplusplus
+
+	vec3 test;
+	vec3init(test.e, 1.0f, 2.0f, 3.0f);
+	printf("%f %f %f \n", test.e[0], test.e[1], test.e[2]);
+	printf("%f %f %f \n", test.e[0], test.e[1], test.e[2]);
 }
 
+#ifdef __cplusplus
+// C++ file io includes
+#include <fstream>
+#include <string>
+#include <iostream>
+#include <gpro/gpro-math/gproVector.h>
+#else // !__cplusplus
+// C file io includes
+#include <stdio.h>
+#endif // __cplusplus
+
+color ray_color(const ray& r) 
+{
+	vec3 unit_direction = unit_vector(r.direction());
+	float t = 0.5f * (unit_direction.y + 1.0f);
+	return (1.0f - t) * color(1.0, 1.0, 1.0) + t * color(0.5f, 0.7f, 1.0f);
+}
+
+using namespace std;
 
 int main(int const argc, char const* const argv[])
 {
-	testVector();
+	//testVector();
+
+	// Image
+	const float aspect_ratio = 16.0f / 9.0f;
+	const int image_width = 400;
+	const int image_height = static_cast<int>(image_width / aspect_ratio);
+
+	// Camera
+
+	float viewport_height = 2.0;
+	float viewport_width = aspect_ratio * viewport_height;
+	float focal_length = 1.0;
+
+	point3 origin = point3(0, 0, 0);
+	vec3 horizontal = vec3(viewport_width, 0, 0);
+	vec3 vertical = vec3(0, viewport_height, 0);
+	vec3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
 
 	printf("\n\n");
-	system("pause");
+	//system("pause");
+
+	ofstream file("image.ppm");
+
+	file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+	for (int j = image_height - 1; j >= 0; --j)
+	{
+		cerr << "\rScanlines remaining: " << j << ' ' << flush;
+		for (int i = 0; i < image_width; ++i)
+		{
+			float u = float(i) / (image_width - 1);
+			float v = float(j) / (image_height - 1);
+			ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
+			color pixel_color = ray_color(r);
+		}
+	}
+
+	cerr << "\nDone.\n";
+	file.close();
+
+	//system("build\Release\GPRO-Graphics1-TestConsole.exe > image.ppm");
 }

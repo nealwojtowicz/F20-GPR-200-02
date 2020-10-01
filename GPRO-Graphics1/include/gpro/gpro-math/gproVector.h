@@ -25,6 +25,7 @@
 #ifndef _GPRO_VECTOR_H_
 #define _GPRO_VECTOR_H_
 
+#include <iostream>
 
 #ifdef __cplusplus
 // DB: link C++ symbols as if they are C where possible
@@ -58,7 +59,7 @@ typedef float const* floatkv;	// generic constant float vector (pointer)
 //		members x, y, z: named components of vector
 union vec3
 {
-	float3 v;
+	float3 e;
 	struct { float x, y, z; };
 
 #ifdef __cplusplus
@@ -76,9 +77,67 @@ union vec3
 
 	vec3 const operator +(vec3 const& rh) const;	// addition operator (get sum of this and another)
 
+
+	vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
+	float operator[](int i) const { return e[i]; }
+	float& operator[](int i) { return e[i]; }
+
+	vec3& operator*=(const float t) 
+	{
+		e[0] *= t;
+		e[1] *= t;
+		e[2] *= t;
+		return *this;
+	}
+
+	vec3& operator/=(const float t) 
+	{
+		return *this *= 1 / t;
+	}
+
+	float length() const
+	{
+		return sqrt(length_squared());
+	}
+
+	float length_squared() const
+	{
+		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
+	}
 #endif	// __cplusplus
 };
 
+#ifdef __cplusplus
+
+using point3 = vec3;
+using color = vec3;
+
+void write_color(std::ostream& out, color pixel_color)
+{
+	// Write the translated [0,255] value of each color component.
+	out << static_cast<int>(255.999f * pixel_color.x) << ' ' << static_cast<int>(255.999f * pixel_color.y) << ' ' << static_cast<int>(255.999f * pixel_color.z) << '\n';
+}
+
+class ray
+{
+public:
+	ray() {};
+	ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction) {};
+
+	point3 origin() const { return orig; };
+	vec3 direction() const { return dir; };
+
+	point3 at(float t) const
+	{
+		return orig + t * dir;
+	}
+
+public:
+	point3 orig;
+	vec3 dir;
+};
+
+#endif
 
 // DB: declare C functions (all equivalents of above C++ functions are here)
 //	-> return pointers so you can chain operations (they just take pointers)

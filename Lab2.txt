@@ -1,0 +1,94 @@
+//Neal Wojtowicz
+//Creates multiple effect functions that show a color gradient, checkerboard, circle, and special effect
+
+//random number function from author "zeh"
+//https://www.shadertoy.com/view/tsf3Dn
+
+float rand(in vec2 fragCoord, in vec2 resolution)
+{
+    vec2 uv = fragCoord / resolution;
+    return fract(sin(dot(uv.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+//Single color gradient
+vec4 myEffect0(in vec2 fragCoord, in vec2 resolution)
+{
+    vec2 uv = fragCoord / iResolution.xy;
+    return vec4(uv, 0.25, 1.0);
+}
+
+//Creates a checkerboard background
+vec4 myEffect1(in vec2 fragCoord, in vec2 resolution)
+{
+    vec2 uv = fragCoord / resolution;
+
+    vec3 a;
+        
+    for(float i = 0.0; i < 1.0; i += 0.1)
+    {
+        //center line
+        if(uv.x > i && uv.x < i + 0.1 && uv.y < i + 0.1 && uv.y > i)
+            a = vec3(1.0, 1.0, 1.0);
+        
+        //creates lines below the center line
+        if(uv.x > i + 0.2 && uv.x < i + 0.3 && uv.y < i + 0.1 && uv.y > i)
+            a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i + 0.4 && uv.x < i + 0.5 && uv.y < i + 0.1 && uv.y > i)
+            a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i + 0.6 && uv.x < i + 0.7 && uv.y < i + 0.1 && uv.y > i)
+            a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i + 0.8 && uv.x < i + 0.9 && uv.y < i + 0.1 && uv.y > i)
+            a = vec3(1.0, 1.0, 1.0);
+        
+        //creates lines above the center line
+        if(uv.x > i && uv.x < i + 0.1 && uv.y > i + 0.2 && uv.y < i + 0.3)
+        	a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i && uv.x < i + 0.1 && uv.y > i + 0.4 && uv.y < i + 0.5)
+            a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i && uv.x < i + 0.1 && uv.y > i + 0.6 && uv.y < i + 0.7)
+            a = vec3(1.0, 1.0, 1.0);
+        if(uv.x > i && uv.x < i + 0.1 && uv.y > i + 0.8 && uv.y < i + 0.9)
+            a = vec3(1.0, 1.0, 1.0);
+    }
+        
+    return vec4(a, 1.0);
+}
+
+//creates a circle that with slowly grow and constantly changes colors
+vec4 myEffect2(in vec2 fragCoord, in vec2 resolution)
+{
+    vec2 uv = fragCoord / resolution;
+    uv -= 0.5;
+    
+    uv.x = uv.x * resolution.x/resolution.y;
+    float dist = length(uv);
+    vec3 a = vec3(dist);
+    
+    if(dist < 0.2 * (iTime * .01))
+    {
+        a = 0.5 + 0.5 * cos(iTime + uv.xyx + vec3(0,2,4));
+    }
+   	else
+    {
+        a = vec3(0.0, 0.0, 0.0); // could be different but I kept it black
+    }
+    
+    return vec4(a, 1.0); 
+}
+
+//creates a messy white/black background
+vec4 myEffect3(in vec2 fragCoord, in vec2 resolution)
+{
+    vec2 uv = fragCoord / resolution;
+    
+    vec3 a;
+    
+    a = vec3(rand(fragCoord, resolution));
+    
+    return vec4(a, 1.0);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    fragColor = myEffect0(fragCoord, iResolution.xy);
+}
