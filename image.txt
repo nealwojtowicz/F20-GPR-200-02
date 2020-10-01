@@ -115,7 +115,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     sSphere s;
     initSphere(s, vec3(0.0, 0.0, -4.0), 0.5);
     pointLight pL;
-    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0, 1.0, 1.0, 1.0), 1000.0);
+    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0, 0.75, 0.5, 1.0), 1000.0);
     
     // TEST
     vec3 dp; //displacement
@@ -149,7 +149,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
          
         float dist = dot(pL.center.xyz, s.center.xyz);
         
-        float attenuation = 1.0 / (1.0 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
+        float attenuation = 1.0 / (1.5 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
         
         float diffuseInt = diffuseCoe * attenuation;
         
