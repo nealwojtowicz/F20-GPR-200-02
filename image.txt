@@ -94,13 +94,13 @@ void initSphere(out sSphere sphere, in vec3 center, in float radius)
     sphere.center = asPoint(center); //to make sure w = 1.0
     sphere.radius = radius;
 }
+//intializes the point light
 void initPointLight(out pointLight pL, in vec3 center, in vec4 color, in float intensity)
 {
     pL.center = asPoint(center);
     pL.color = color;
     pL.intensity = intensity;
 }
-
 float length_squared(vec2 x)
 {
  	return dot(x, x);   
@@ -115,7 +115,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     sSphere s;
     initSphere(s, vec3(0.0, 0.0, -4.0), 0.5);
     pointLight pL;
-    initPointLight(pL, vec3(1.0, 1.0, -4.0), vec4(1.0, 1.0, 1.0, 1.0), 1000.0);
+    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0, 1.0, 1.0, 1.0), 1000.0);
     
     // TEST
     vec3 dp; //displacement
