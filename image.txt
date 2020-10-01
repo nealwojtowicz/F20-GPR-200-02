@@ -61,20 +61,6 @@ void calcRay(out vec4 rayDirection, out vec4 rayOrigin,
     rayDirection = asOffset(viewport - eyePosition);
 }
 
-/*
-bool checkSphere(out sSphere sphere, in vec4 center, in float radius)
-{
-    sphere.center = asPoint(center); //to make sure w = 1.0
-    if (radius > 0)
-    {
-    	sphere.radius = radius;
-        return true;
-    }
-    sphere.radius = 1.0;
-    return false;
-}
-*/ 
-
 struct sSphere
 {
  	vec4 center;
@@ -87,7 +73,7 @@ struct pointLight
     vec4 color;
     float intensity;
 };
-    
+  
 //initializes a sphere
 void initSphere(out sSphere sphere, in vec3 center, in float radius)
 {
@@ -105,6 +91,17 @@ float length_squared(vec2 x)
 {
  	return dot(x, x);   
 }
+void lightColor(in int i, in pointLight pL)
+{
+    if(i == 1)
+        initPointLight(pL, vec3(0.0, 1.0, -2.0), vec4(1.0, 0.0, 0.0, 1.0), 1000.0);
+    else if (i == 2)
+        initPointLight(pL, vec3(1.0, 0.0, -2.0), vec4(1.0, 1.0, 0.0, 1.0), 1000.0);
+    else if (i == 3)
+        initPointLight(pL, vec3(0.0, 1.0, 2.0), vec4(1.0, 1.0, 1.0, 1.0), 1000.0);
+    else
+        initPointLight(pL, vec3(1.0, 0.0, 2.0), vec4(0.0, 0.0, 0.0, 1.0), 1000.0);
+}
 
 // calcColor: calculate the color of a pixel given a ray
 //    rayDirection: input ray direction
@@ -115,7 +112,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     sSphere s;
     initSphere(s, vec3(0.0, 0.0, -4.0), 0.5);
     pointLight pL;
-    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0, 0.75, 0.5, 1.0), 1000.0);
+    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0, 0.5, 0.0, 1.0), 1000.0);
     
     // TEST
     vec3 dp; //displacement
@@ -134,17 +131,10 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
         //vec3 normal = normalize(position - s.center.xyz);
         vec3 normal = (position - s.center.xyz) / s.radius;
         
+        
+        //part 3
         vec3 light = normalize(pL.center.xyz - s.center.xyz);
-       
-        /*
-        vec3 diffuseCoe = max(vec3(0.0), normal * light);
-        vec3 dist = pL.center.xyz - s.center.xyz;
-        vec3 attenuation = vec3(1.0) / (1.0 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
-        vec3 diffuseInt = diffuseCoe * attenuation;
-		vec3 finalColor = diffuseInt * normal * pL.color;
-		return vec4(finalColor, 1.0);
-		*/        
-
+        
         float diffuseCoe = max(0.0, dot(normal, light));
          
         float dist = dot(pL.center.xyz, s.center.xyz);
@@ -153,15 +143,51 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
         
         float diffuseInt = diffuseCoe * attenuation;
         
-        vec4 finalColor = diffuseInt * (normal, 1.0) * pL.color;
+        
+        //parts 4 and 5
+        vec3 viewVector = normalize(rayOrigin.xyz - s.center.xyz);
+        
+        vec3 halfwayVector = normalize(light + viewVector);
+        
+        float specularCoe = max(0.0, dot(normal, halfwayVector));
+            
+        vec4 finalColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0) + (diffuseInt * vec4(normal, 1.0) + pow(specularCoe, 64.0) * vec4(1.0, 1.0, 1.0, 1.0)) * pL.color;
+        
+        
+        /*part 6
+        vec4 finalColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0);
+        
+        int n = 4;
+        
+        for(int i = 1; i <= n; i++)
+        {
+			lightColor(i, pL);
+			
+        	vec3 light = normalize(pL.center.xyz - s.center.xyz);
+        
+        	float diffuseCoe = max(0.0, dot(normal, light));
+         
+        	float dist = dot(pL.center.xyz, s.center.xyz);
+        
+        	float attenuation = 1.0 / (1.5 + dist/pL.intensity + (dist * dist)/(pL.intensity * pL.intensity));
+        
+        	float diffuseInt = diffuseCoe * attenuation;
+            
+        	vec3 viewVector = normalize(rayOrigin.xyz - s.center.xyz);
+        
+        	vec3 halfwayVector = normalize(light + viewVector);
+        
+        	float specularCoe = max(0.0, dot(normal, halfwayVector));
+            
+            return finalColor = (diffuseInt * vec4(normal, 1.0) + pow(specularCoe, 64.0) * vec4(1.0, 1.0, 1.0, 1.0)) * pL.color;
+        }*/
         
         return finalColor;
     }
     
 	// BACKGROUND
-	const vec3 warm = vec3(0.8, 0.4, 0.2), cool = vec3(0.2, 0.4, 0.8);
-	//return vec4(mix(warm, cool, rayDirection.y), 1.0);
-    return vec4(0.5);
+	const vec3 warm = vec3(1.0, 0.5, 0.0), cool = vec3(0.0, 0.5, 1.0);
+	return vec4(mix(warm, cool, rayDirection.y), 1.0);
 }
 
 // mainImage: process the current pixel (exactly one call per pixel)
