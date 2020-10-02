@@ -185,7 +185,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
         return finalColor;
     }
     
-	// BACKGROUND
+	// BACKGROUND 
 	const vec3 warm = vec3(1.0, 0.5, 0.0), cool = vec3(0.0, 0.5, 1.0);
 	return vec4(mix(warm, cool, rayDirection.y), 1.0);
 }
