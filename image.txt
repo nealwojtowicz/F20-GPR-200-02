@@ -186,7 +186,7 @@ sCoord distort(in sCoord origin, in sViewport vp)
     //magnifying glass
     vp.uv -= 0.5;
     vp.uv.x *= vp.aspectRatio;
-    float dist = length(vp.uv);
+    sScalar dist = length(vp.uv); //from origin
     
     if(dist < 0.3)
         deformed = origin.xy * 0.3;
@@ -194,6 +194,18 @@ sCoord distort(in sCoord origin, in sViewport vp)
         deformed = origin.xy;
     
     return deformed;
+}
+color4 light(in sCoord loc, in sViewport vp)
+{
+    sDCoord surfacePosition = vp.uv;
+    color3 surfaceNormal = normalize(color3(surfacePosition, 1.0));
+    color3 lightPosition = normalize(color3(1.0, 1.0, 1.0) - color3(surfacePosition, 1.0));
+    sScalar diffuseCoefficient = max(0.0, dot(surfaceNormal, lightPosition));
+    sScalar dist = dot(sDCoord(1.0, 1.0), surfacePosition);
+    sScalar attenuation = 1.0 / (1.0 + dist/1000.0 + (dist * dist)/(1000.0 * 1000.0));
+    sScalar diffuseIntensity = diffuseCoefficient * attenuation;
+    color4 finalColor = diffuseIntensity * texture(iChannel0, loc) * color4(1.0, 0.5, 0.0, 1.0);
+  	return finalColor;                           
 }
 
 // calcColor: calculate the color of current pixel
@@ -221,9 +233,15 @@ color4 calcColor(in sViewport vp, in sRay ray)
     loc = ratio * loc + 0.1; //zoom and move
     //use addition/subtraction to move it and multiplication to scale it
     //ratio makes it not stretched and match the screen when it is clamped
-    //return crossFade(loc, vp);
-    return texture(iChannel0, distort(loc, vp)); //RGBA
+    
+    //return crossFade(loc, vp); //part 1
+    //return texture(iChannel0, distort(loc, vp)); //part 2
+    return light(loc, vp); //part 3
+    
+    //return texture(iChannel0, loc); //RGBA
     //return texture(iChannel0, loc).xxxx; //greyscale (swizzling)
+    //return vp.viewportPoint;
+    //return vec4(normalize(vec3(vp.viewportPoint.xy, 0.0)), 1.0); //change the z
 }
 
 
