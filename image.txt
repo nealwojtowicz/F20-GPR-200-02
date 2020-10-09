@@ -179,10 +179,6 @@ sCoord distort(in sCoord origin, in sViewport vp)
 {
     sCoord deformed;
     
-    // do stuff (maybe black hole, thats a bonus tho)
-    // pass in original sampling location, 
-    // changing the sampling location in 2D space
-    
     //magnifying glass
     vp.uv -= 0.5;
     vp.uv.x *= vp.aspectRatio;
@@ -195,17 +191,40 @@ sCoord distort(in sCoord origin, in sViewport vp)
     
     return deformed;
 }
+color3 distortCube(in color3 cubeOrigin, in sViewport vp)
+{
+    color3 deformed;
+    
+   //magnifying glass
+    vp.uv -= 0.5;
+    vp.uv.x *= vp.aspectRatio;
+    sScalar dist = length(vp.uv); //from origin
+    
+    if(dist < 0.3)
+        deformed = cubeOrigin.xyz + 1.0;
+    else
+        deformed = cubeOrigin.xyz;
+    
+    return deformed; 
+}
 color4 light(in sCoord loc, in sViewport vp)
 {
     sDCoord surfacePosition = vp.uv;
     color3 surfaceNormal = normalize(color3(surfacePosition, 1.0));
-    color3 lightPosition = normalize(color3(1.0, 1.0, 1.0) - color3(surfacePosition, 1.0));
+    color3 lightPosition = normalize(color3(20.0 / iTime, 20.0 / iTime, 1.0) - color3(surfacePosition, 1.0));
     sScalar diffuseCoefficient = max(0.0, dot(surfaceNormal, lightPosition));
     sScalar dist = dot(sDCoord(1.0, 1.0), surfacePosition);
     sScalar attenuation = 1.0 / (1.0 + dist/1000.0 + (dist * dist)/(1000.0 * 1000.0));
     sScalar diffuseIntensity = diffuseCoefficient * attenuation;
     color4 finalColor = diffuseIntensity * texture(iChannel0, loc) * color4(1.0, 0.5, 0.0, 1.0);
   	return finalColor;                           
+}
+color3 rotationMatrix(in sScalar dir, in sDCoord cubeLoc, in sDCoord rotateOrigin)
+{
+    cubeLoc -= rotateOrigin;
+    cubeLoc *= mat2(cos(dir), -sin(dir), sin(dir), cos(dir));
+    cubeLoc += rotateOrigin;
+    return color3(cubeLoc, 1.0);
 }
 
 // calcColor: calculate the color of current pixel
@@ -234,9 +253,18 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //use addition/subtraction to move it and multiplication to scale it
     //ratio makes it not stretched and match the screen when it is clamped
     
-    //return crossFade(loc, vp); //part 1
+    //cube map (part 4)
+    //sampler type: samplerCube
+    
+    color3 cubeLoc = ray.direction.xyz;
+    cubeLoc -= 0.5;
+    sScalar dir = iTime;
+    cubeLoc = rotationMatrix(dir, cubeLoc.xy, sDCoord(1.0, 1.0));
+
+    return crossFade(loc, vp); //part 1
     //return texture(iChannel0, distort(loc, vp)); //part 2
-    return light(loc, vp); //part 3
+    //return light(loc, vp); //part 3
+    //return texture(iChannel2, distortCube(cubeLoc, vp)); //part 4
     
     //return texture(iChannel0, loc); //RGBA
     //return texture(iChannel0, loc).xxxx; //greyscale (swizzling)
