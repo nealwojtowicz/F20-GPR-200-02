@@ -1,20 +1,30 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    sCoord uv = fragCoord / iChannelResolution[0].xy;
     sCoord topRight, top, topLeft, right, middle, left, botRight, bot, botLeft;
-    //sScalar topRight, top, topLeft, right, middle, left, botRight, bot, botLeft;
-    /*topLeft = sCoord(fragCoord.x - 1.0, fragCoord.y + 1.0);
+    
+    topLeft = sCoord(fragCoord.x - 1.0, fragCoord.y + 2.0);
     top = sCoord(fragCoord.x, fragCoord.y + 1.0);
     topRight = sCoord(fragCoord.x + 1.0, fragCoord.y + 1.0);
+    
     left = sCoord(fragCoord.x - 1.0, fragCoord.y);
     middle = sCoord(fragCoord.xy);
     right = sCoord(fragCoord.x + 1.0, fragCoord.y);
+    
     botLeft = sCoord(fragCoord.x - 1.0, fragCoord.y - 1.0);
     bot = sCoord(fragCoord.x, fragCoord.y - 1.0);
-    botRight = sCoord(fragCoord.x + 1.0, fragCoord.y - 1.0);*/
+    botRight = sCoord(fragCoord.x + 1.0, fragCoord.y - 1.0);
     
-    mat3 kernel = mat3(topLeft, top, topRight, 
-                       left, middle, right, 
-                       botLeft, bot, botRight);
+    color4 weights[9] = color4[](texture(iChannel0, topLeft), texture(iChannel0, top), texture(iChannel0, topRight), 
+                                 texture(iChannel0, left), texture(iChannel0, middle), texture(iChannel0, right), 
+                                 texture(iChannel0, botLeft), texture(iChannel0, bot), texture(iChannel0, botRight));
     
-    fragColor = vec4(0.0,0.0,1.0,1.0);
+    color4 normal = 1.0 / (texture(iChannel0, topLeft) + texture(iChannel0, top) + texture(iChannel0, topRight)
+                            + texture(iChannel0, left) + texture(iChannel0, middle) + texture(iChannel0, right)
+                            + texture(iChannel0, botLeft) + texture(iChannel0, bot) + texture(iChannel0, botRight));
+    
+    for(int i = 0; i < 9; i++)
+    {
+        fragColor = normal * weights[i] * texture(iChannel0, uv);
+    }
 }

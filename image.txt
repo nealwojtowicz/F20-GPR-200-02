@@ -18,12 +18,13 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     
     //fragColor = texture(iChannel0, uv); //buffer A
     //fragColor = texture(iChannel1, uv); //buffer B
-    //fragColor = texture(iChannel2, uv); //buffer C
+    fragColor = texture(iChannel2, uv); //buffer C
     
-    color4 text1 = texture(iChannel1, uv);
+    color4 text1 = texture(iChannel0, uv);
     color4 text2 = texture(iChannel2, uv);
     
     //fragColor = text1 + text2; //add
-    //fragColor = mix(texture(iChannel1, uv), texture(iChannel2, uv), uv.x); //mix
-    fragColor = (1.0 - text1) * (1.0 - text2); //screen (i think)
+    //fragColor = mix(text1, text2, uv.x); //mix
+    //fragColor = 1.0 - (1.0 - text1) * (1.0 - text2); //screen
+    //fragColor = text1 * text2; //multiply
 }
