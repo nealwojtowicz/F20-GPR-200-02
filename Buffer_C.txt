@@ -1,4 +1,20 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    sCoord topRight, top, topLeft, right, middle, left, botRight, bot, botLeft;
+    //sScalar topRight, top, topLeft, right, middle, left, botRight, bot, botLeft;
+    /*topLeft = sCoord(fragCoord.x - 1.0, fragCoord.y + 1.0);
+    top = sCoord(fragCoord.x, fragCoord.y + 1.0);
+    topRight = sCoord(fragCoord.x + 1.0, fragCoord.y + 1.0);
+    left = sCoord(fragCoord.x - 1.0, fragCoord.y);
+    middle = sCoord(fragCoord.xy);
+    right = sCoord(fragCoord.x + 1.0, fragCoord.y);
+    botLeft = sCoord(fragCoord.x - 1.0, fragCoord.y - 1.0);
+    bot = sCoord(fragCoord.x, fragCoord.y - 1.0);
+    botRight = sCoord(fragCoord.x + 1.0, fragCoord.y - 1.0);*/
+    
+    mat3 kernel = mat3(topLeft, top, topRight, 
+                       left, middle, right, 
+                       botLeft, bot, botRight);
+    
     fragColor = vec4(0.0,0.0,1.0,1.0);
 }

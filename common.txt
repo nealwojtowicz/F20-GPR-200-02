@@ -172,15 +172,14 @@ void initRayOrtho(out sRay ray,
     initRayPersp(ray, eyePosition + sBasis(viewport.xy, 0.0), viewport);
 }
 
-color3 rotationMatrix(in sScalar dir, in sDCoord cubeLoc, in sDCoord rotateOrigin)
+mat3 rotationMatrix(in sScalar dir)
 {
-    //rotation matrix function from bytewave
-    //https://www.shadertoy.com/view/Mls3R7
-    
-    cubeLoc -= rotateOrigin;
-    cubeLoc *= mat2(cos(dir), sin(dir), -sin(dir), cos(dir));
-    cubeLoc += rotateOrigin;
-    return color3(cubeLoc, 1.0);
+    mat3 rotZ;
+    float c = cos(dir), s = sin(dir);
+    rotZ = mat3(+c, +s, 0.0, 
+                -s, +c, 0.0, 
+                0.0, 0.0, 1.0);
+    return rotZ;
 }
 
 //------------------------------------------------------------
