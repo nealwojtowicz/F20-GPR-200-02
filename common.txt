@@ -1,5 +1,4 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
-//  -> COMMON TAB (shared with all other tabs)
 
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
@@ -50,12 +49,6 @@ sVector asVector(in sBasis v)
 
 
 // lengthSq: calculate the squared length of a vector type
-//    x: input whose squared length to calculate
-sScalar lengthSq(sScalar x)
-{
-    return (x * x);
-    //return dot(x, x); // for consistency with others
-}
 sScalar lengthSq(sDCoord x)
 {
     return dot(x, x);
@@ -171,7 +164,29 @@ void initRayOrtho(out sRay ray,
     // offset eye position to point on plane at the same depth
     initRayPersp(ray, eyePosition + sBasis(viewport.xy, 0.0), viewport);
 }
-
+struct Sphere
+{
+    color4 center;
+    sScalar radius;
+};
+struct Light
+{
+    color4 center;
+    color4 color;
+    sScalar intensity;
+};
+    
+void initSphere(in Sphere s, in color4 sCenter, in sScalar sRadius)
+{
+    s.center = sCenter;
+    s.radius = sRadius;
+}
+void initLight(in Light l, in color4 lightPos, in color4 lightColor, in sScalar lightInt)
+{
+    l.center = lightPos;
+    l.color = lightColor;
+    l.intensity = lightInt;
+}
 mat3 rotationMatrix(in sScalar dir)
 {
     mat3 rotZ;
@@ -181,35 +196,3 @@ mat3 rotationMatrix(in sScalar dir)
                 0.0, 0.0, 1.0);
     return rotZ;
 }
-
-//------------------------------------------------------------
-/*
-// GLSL FRAGMENT SHADER STRUCTURE WITH COMMON TAB
-//  -> This is (likely) how Shadertoy compiles buffer tabs:
-
-// latest version or whichever is used
-#version 300 es
-
-// **CONTENTS OF COMMON TAB PASTED HERE**
-
-// PROGRAM UNIFORMS (see 'Shader Inputs' dropdown)
-
-// **CONTENTS OF BUFFER TAB PASTED HERE**
-
-// FRAGMENT SHADER INPUTS (more on this later)
-
-// FRAGMENT SHADER OUTPUTS (framebuffer render target(s))
-//out vec4 rtFragColor; // no specific target
-layout (location = 0) out vec4 rtFragColor; // default
-
-void main()
-{
-    // Call 'mainImage' in actual shader main, which is 
-	// 	our prototyping interface for ease of use.
-	//		rtFragColor:  shader output passed by reference,
-	//			full vec4 read in 'mainImage' as 'fragColor'
-	//		gl_FragCoord: GLSL's built-in pixel coordinate,
-	//			vec2 part read in 'mainImage' as 'fragCoord'
-    mainImage(rtFragColor, gl_FragCoord.xy);
-}
-*/

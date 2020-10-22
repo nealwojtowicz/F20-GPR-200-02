@@ -7,24 +7,11 @@
 // mainImage: process the current pixel (exactly one call per pixel)
 //    fragColor: output final color for current pixel
 //    fragCoord: input location of current pixel in image (in pixels)
-void mainImage(out color4 fragColor, in sCoord fragCoord)
+
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    // setup
-    // test UV for input image
     sCoord uv = fragCoord / iChannelResolution[0].xy;
     
-    // TESTING
-    // set iChannel0 to 'Misc/Buffer A' and fetch sample
-    
-    //fragColor = texture(iChannel0, uv); //buffer A
-    //fragColor = texture(iChannel1, uv); //buffer B
-    fragColor = texture(iChannel2, uv); //buffer C
-    
-    color4 text1 = texture(iChannel0, uv);
-    color4 text2 = texture(iChannel2, uv);
-    
-    //fragColor = text1 + text2; //add
-    //fragColor = mix(text1, text2, uv.x); //mix
-    //fragColor = 1.0 - (1.0 - text1) * (1.0 - text2); //screen
-    //fragColor = text1 * text2; //multiply
+    fragColor = texture(iChannel1, uv);
 }

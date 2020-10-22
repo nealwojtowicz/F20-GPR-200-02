@@ -1,13 +1,39 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    
+    // create sphere
+    Sphere s;
+    initSphere(s, color4(0.5, 0.5, 1.0, 1.0), 1.0);
+   
+    // create light
+    Light l;
+    initLight(l, color4(1.0, 1.0, 1.0, 1.0), color4(1.0, 0.5, 0.0, 1.0), 1000.0);
+    
+    /*
+    color4 finalColor;
+    color3 position, normal, light;
+    sScalar diffuseCoe, dist, attenuation, diffuseInt;
+    
+    position = s.center.xyz;
+    normal = (position - s.center.xyz) / s.radius;
+    light = normalize(l.center.xyz - s.center.xyz);    
+    diffuseCoe = max(0.0, dot(normal, light));    
+    dist = dot(l.center.xyz, s.center.xyz);   
+    attenuation = 1.0 / (1.5 + dist/l.intensity + (dist * dist)/(l.intensity * l.intensity));
+    diffuseInt = diffuseCoe * attenuation;
+    
+   	finalColor = diffuseInt * color4(normal, 1.0) * l.color;
+    */
+    
     sCoord uv = fragCoord / iChannelResolution[0].xy;
-    fragColor = texture(iChannel0, uv);
-    sScalar lumThresh = 4.0;
+    sCoord surfacePosition = uv;
+    color3 surfaceNormal = normalize(color3(surfacePosition, 1.0));
+    color3 lightPosition = normalize(l.center.xyz - color3(surfacePosition, 1.0));
+    sScalar diffuseCoefficient = max(0.0, dot(surfaceNormal, lightPosition));
+    sScalar dist = dot(sCoord(1.0, 1.0), surfacePosition);
+    sScalar attenuation = 1.0 / (1.5 + dist/l.intensity + (dist * dist)/(l.intensity * l.intensity));
+    sScalar diffuseIntensity = diffuseCoefficient * attenuation;
+    color4 finalColor = diffuseIntensity * texture(iChannel0, uv) * l.color;  
     
-    sScalar brightness = fragColor.r * 0.2126 + fragColor.g * 0.7152 + fragColor.b * 0.0722;
-    
-    if (brightness > 0.9)
-        fragColor = texture(iChannel0, uv);
-    else
-        fragColor = texture(iChannel0, uv) * (1.0 / (1.0 + lumThresh));
+    fragColor = finalColor;
 }
