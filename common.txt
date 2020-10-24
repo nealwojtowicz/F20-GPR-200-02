@@ -169,7 +169,7 @@ struct Sphere
     color4 center;
     sScalar radius;
 };
-struct Light
+struct pointLight
 {
     color4 center;
     color4 color;
@@ -181,11 +181,13 @@ void initSphere(in Sphere s, in color4 sCenter, in sScalar sRadius)
     s.center = sCenter;
     s.radius = sRadius;
 }
-void initLight(in Light l, in color4 lightPos, in color4 lightColor, in sScalar lightInt)
+pointLight initLight(in color3 lightPos, in color4 lightColor, in sScalar lightInt)
 {
-    l.center = lightPos;
-    l.color = lightColor;
-    l.intensity = lightInt;
+    pointLight pL;
+    pL.center = asPoint(lightPos);
+    pL.color = lightColor;
+    pL.intensity = lightInt;
+    return pL;
 }
 mat3 rotationMatrix(in sScalar dir)
 {
