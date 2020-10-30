@@ -1,4 +1,20 @@
+/*
+Name: Buffer B
+Purpose: The purpose of this shader is to create a visual distort using a black hole
+Contributors: Neal Wojtowicz, robobo1221
+*/
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    fragColor = vec4(1.0);
+    //Black hole shader from robobo1221
+    //https://www.shadertoy.com/view/Xt3GWj
+    
+    sCoord uv, mouse, tex, tex2;
+    
+    uv = fragCoord.xy / iResolution.xy;
+    tex = uv;
+    mouse = iMouse.xy / iResolution.x;
+    tex2 = fragCoord.xy / iResolution.x;
+    
+    tex = mix(tex2, (tex * 2.0 - mouse * 2.0) * 0.0 * 0.5 + mouse, (1.0 / (distance((tex2 * 2.0 - mouse * 2.0) * 10.0 * 0.5 + mouse, mouse) - 1.0)));
+    fragColor = color4(texture(iChannel0, tex.xy).xyz * clamp(pow(distance(tex2, vec2(mouse)),8.8) * 300000000.0,0.0,1.0), 1.0);
 }

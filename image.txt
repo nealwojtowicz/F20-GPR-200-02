@@ -1,6 +1,12 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 //  -> IMAGE TAB (final)
 
+/*
+Name: Image
+Purpose: This file simply calls the buffers and intiates the distorts
+Contributors: Neal Wojtowicz
+*/
+
 //------------------------------------------------------------
 // SHADERTOY MAIN
 
@@ -13,5 +19,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     sCoord uv = fragCoord / iChannelResolution[0].xy;
     
-    fragColor = texture(iChannel1, uv);
+    fragColor = texture(iChannel0, uv); //calls Buffer A
+    //fragColor = texture(iChannel1, uv); //calls Buffer B
+    //fragColor = texture(iChannel2, uv); //calls Buffer C
 }

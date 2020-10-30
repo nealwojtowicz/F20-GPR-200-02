@@ -1,3 +1,11 @@
+/*
+Name: Buffer A
+Purpose: This file creates the Lambertian model and distorts the image with color and movement
+Contributors: Neal Wojtowicz
+*/
+
+//This is the standard Lambertian model that is implemented. It takes a location, viewport,
+//and a pointLight structure to which it colors the scene. The color used is pL.color.
 color4 light(in color3 cubeLoc, in sViewport vp, in pointLight pL)
 {
     sCoord surfacePosition = vp.uv;
@@ -28,12 +36,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     initRayPersp(ray, eyePosition, vp.viewportPoint.xyz);
    
     // create light
-    pointLight pL = initLight(color3(1.0, 1.0, 1.0), color4(1.0, 0.5, 0.0, 1.0), 1000.0);
+    color3 col = 0.5 + 5.0 * cos(iTime + vp.uv.xyx + color3(0.0, 5.0, 10.0));
+    //pointLight pL = initLight(color3(1.0), color4(col, 1.0), 1000.0); //alternating colors
+    pointLight pL = initLight(color3(1.0), color4(1.0), 1000.0); //single color
 
     // calculate cubeloc
     color3 cubeLoc = ray.direction.xyz;
-    //sScalar dir = iTime;
-    //cubeLoc *= rotationMatrix(dir);
+    sScalar dir = iTime;
+    //cubeLoc *= rotationDistort(dir);
+    cubeLoc.xz *= rotationMatrix(dir);
     
     //creates a cubemap with the Lambertian model
     fragColor += light(cubeLoc, vp, pL);

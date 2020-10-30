@@ -1,5 +1,12 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 
+/*
+Name: Common
+Purpose: This file is to load viewport/ray elements, rotation matrix function, a rotation
+distort function, a light structure, and a function that initiates a light structure
+Contributors: Dan Buckstein, Neal Wojtowicz
+*/
+
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
 
@@ -164,23 +171,19 @@ void initRayOrtho(out sRay ray,
     // offset eye position to point on plane at the same depth
     initRayPersp(ray, eyePosition + sBasis(viewport.xy, 0.0), viewport);
 }
-struct Sphere
-{
-    color4 center;
-    sScalar radius;
-};
+
+/*creates a light object with a center, color, and intensity which are intiated from the 
+function initLight*/
 struct pointLight
 {
     color4 center;
     color4 color;
     sScalar intensity;
 };
-    
-void initSphere(in Sphere s, in color4 sCenter, in sScalar sRadius)
-{
-    s.center = sCenter;
-    s.radius = sRadius;
-}
+
+/*takes in a vec3 for the center, a vec4 for the color, and a float for the intensity, 
+then creates a pointLight structure and sets the parameters to the pL values, then finally 
+returning the pointLight structure*/
 pointLight initLight(in color3 lightPos, in color4 lightColor, in sScalar lightInt)
 {
     pointLight pL;
@@ -189,12 +192,20 @@ pointLight initLight(in color3 lightPos, in color4 lightColor, in sScalar lightI
     pL.intensity = lightInt;
     return pL;
 }
-mat3 rotationMatrix(in sScalar dir)
+
+//this function is a specialized rotationMatrix that is more of a distort with some changes
+mat3 rotationDistort(in sScalar dir)
 {
     mat3 rotZ;
     float c = cos(dir), s = sin(dir);
-    rotZ = mat3(+c, +s, 0.0, 
+    rotZ = mat3(+c, -s, 0.0, 
                 -s, +c, 0.0, 
-                0.0, 0.0, 1.0);
+                1.0, 1.0, 1.0);
     return rotZ;
+}
+
+//standard rotationMatrix function, but a mat2
+mat2 rotationMatrix(in sScalar dir)
+{
+    return mat2(cos(dir),-sin(dir),sin(dir),cos(dir));
 }
