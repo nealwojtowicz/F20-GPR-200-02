@@ -1,0 +1,42 @@
+#version 300 es
+//alt -> #version 450
+
+// MAIN DUTY: processing vertices
+//vertices:
+//3D points in space
+//normal vectors, 
+//uv: texture coordinates
+layout (location = 0) in vec4 aPosition; //0 represents which attribute
+//alt -> in vec4 aPosition;
+
+// TRANSFORM UNIFORMS
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjMatrix;
+
+// VARYING
+out vec4 vColor;
+
+void main()
+{
+	//REQUIRED: write to this variable
+	//problem: gl_position is in "clip-space"
+	//problem: aPosition is in "object-space"
+	//gl_Position = aPosition;
+	
+	//position in world space
+	vec4 wPosition = uModelMatrix * aPosition;
+	//gl_Position = wPosition;
+	
+	//position in viewer space
+	vec4 vPosition = (uViewMatrix * uModelMatrix) * aPosition;
+	//gl_Position = vPosition;
+	
+	//position in clip space
+	vec4 cPosition = (uProjMatrix * uViewMatrix * uModelMatrix) * aPosition;
+	gl_Position = cPosition;
+	
+	//OPTIONAL (pass varyings)
+	//vColor = vec4(1.0, 0.5, 0.0, 1.0);
+	vColor = aPosition;
+}
