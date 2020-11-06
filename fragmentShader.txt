@@ -10,10 +10,38 @@ layout (location = 0) out vec4 rtFragColor; //0 represents which layer
 //alt -> out vec4 rtFragColor;
 
 //VARYING
+
+//PER-VERTEX: final color inbound
 in vec4 vColor;
+
+//PER-FRAGMENT: receive requirements for final color
+in vec4 vNormal;
+in vec4 vTexCoord;
+in vec3 vLight;
+in vec3 vPosition;
+in float vIntensity;
 
 void main()
 {
-	//rtFragColor = vec4(0.5, 1.0, 0.0, 1.0);
-	rtFragColor = vColor;
+	//PER-VERTEX:
+	//rtFragColor = vColor;
+	
+	//PER-FRAGMENT: calc and display
+	vec4 N = normalize(vNormal); //transfer to unit length
+	vec3 light = normalize(vLight - vPosition);
+	float diffuseCoe = max(0.0, dot(N.xyz, light));
+	float dist = dot(vLight, vPosition);
+	float atten = 1.0 / (1.0 + dist/vIntensity + (dist * dist)/(vIntensity * vIntensity));
+	float diffuseInt = diffuseCoe * atten;
+	//rtFragColor = diffuseInt * N * vColor;
+	
+	vec3 halfwayVector = normalize(light + 3.0);
+	vec3 halfwayVector2 = normalize(light);
+	vec3 halfwayVector3 = normalize(light - 1.0);
+	float specularCoe = max(0.0, dot(N.xyz, halfwayVector));
+	float specularCoe2 = max(0.0, dot(N.xyz, halfwayVector2));
+	float specularCoe3 = max(0.0, dot(N.xyz, halfwayVector3));
+	
+	//rtFragColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0) + (diffuseInt * N + pow(specularCoe, 64.0) * vec4(1.0, 0.0, 0.0, 1.0)) + (diffuseInt * N + pow(specularCoe3, 64.0) * vec4(1.0)) + (diffuseInt * N + pow(specularCoe2, 64.0) * vec4(1.0)) * vColor;
+	rtFragColor = vTexCoord;
 }

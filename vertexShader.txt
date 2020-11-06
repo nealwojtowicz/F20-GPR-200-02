@@ -7,36 +7,80 @@
 //normal vectors, 
 //uv: texture coordinates
 layout (location = 0) in vec4 aPosition; //0 represents which attribute
-//alt -> in vec4 aPosition;
+layout (location = 1) in vec3 aNormal; //vec3 because w can't be 1
+layout (location = 2) in vec4 aTexCoord;
 
 // TRANSFORM UNIFORMS
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjMatrix;
+uniform mat4 uViewProjMatrix;
+uniform sampler2D texture1;
+uniform sampler2D texture2;
 
 // VARYING
+
+// PER-VERTEX: pass final color
 out vec4 vColor;
+
+//PER-FRAGMENT: pass requirements for final color
+out vec4 vNormal;
+out vec4 vTexCoord;
+out vec3 vLight;
+out vec3 vPosition;
+out float vIntensity;
+
+//FUNCTIONS AND STRUCTURES
+// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+
+vec4 asPoint(in vec3 point)
+{
+    return vec4(point, 1.0);
+}
+struct pointLight
+{
+    vec4 center;
+    vec4 color;
+    float intensity;
+};
+void initPointLight(out pointLight pL, in vec3 center, in vec4 color, in float intensity)
+{
+    pL.center = asPoint(center);
+    pL.color = color;
+    pL.intensity = intensity;
+}
 
 void main()
 {
-	//REQUIRED: write to this variable
-	//problem: gl_position is in "clip-space"
-	//problem: aPosition is in "object-space"
-	//gl_Position = aPosition;
+	pointLight pL;
+    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0), 1000.0);
 	
-	//position in world space
-	vec4 wPosition = uModelMatrix * aPosition;
-	//gl_Position = wPosition;
+	//POSITION PIPELINE
+	mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
+	vec4 pos_view = modelViewMatrix * aPosition;
+	vec4 pos_clip = uProjMatrix * pos_view;
+	gl_Position = pos_clip;
 	
-	//position in viewer space
-	vec4 vPosition = (uViewMatrix * uModelMatrix) * aPosition;
-	//gl_Position = vPosition;
+	//NORMAL PIPELINE
+	mat3 normalMat = inverse(transpose(mat3(modelViewMatrix)));
+	vec3 nrm_view = normalMat * aNormal;
 	
-	//position in clip space
-	vec4 cPosition = (uProjMatrix * uViewMatrix * uModelMatrix) * aPosition;
-	gl_Position = cPosition;
+	//TEXCOORD PIPELINE -> spot (4,4) always has to be 1.0
+	//scale: spots (1,1), (2,2), and (3,3)
+	//translation: spots (1,4) and (2,4)
+	mat4 atlasMatrix = mat4(1.0, 0.0, 0.0, 0.0,
+							0.0, 1.0, 0.0, 0.0,
+							0.0, 0.0, 1.0, 0.0,
+							0.0, 0.0, 0.0, 1.0);
+	vec4 uv_atlas = atlasMatrix * texture(texture1, aTexCoord.xy);
+
+	//PER-FRAGMENT: output data for FS to calc final color
+	vNormal = vec4(nrm_view, 0.0);
+	vLight = pL.center.xyz;
+	vPosition = pos_clip.xyz;
+	vIntensity = pL.intensity;
+	vColor = pL.color;
 	
-	//OPTIONAL (pass varyings)
-	//vColor = vec4(1.0, 0.5, 0.0, 1.0);
-	vColor = aPosition;
+	vTexCoord = uv_atlas;
+	//gl_Position = modelViewMatrix * uProjMatrix * aTexCoord;
 }
