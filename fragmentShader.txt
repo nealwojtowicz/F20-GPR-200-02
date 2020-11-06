@@ -39,12 +39,10 @@ void main()
 	vec3 H = normalize(L.xyz * L.xyz - 0.1);
 	vec3 H2 = normalize(L.xyz * L.xyz);
 	vec3 H3 = normalize(L.xyz * L.xyz - 0.2);
-	vec4 R = reflect(-L, N);
-	vec4 V = normalize(-vLight);
 	float spec = max(0.0, dot(N.xyz, H));
 	float spec2 = max(0.0, dot(N.xyz, H2));
 	float spec3 = max(0.0, dot(N.xyz, H3));
 	
 	//rtFragColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0) + diffuseInt * N * vColor + pow(spec, 64.0) * vec4(1.0, 0.0, 0.0, 1.0) + pow(spec2, 64.0) * vec4(0.0, 1.0, 0.0, 1.0) + pow(spec3, 64.0) * vec4(0.0, 0.0, 1.0, 1.0);
-	rtFragColor = texture(texture1, vTexCoord.xy);
+	rtFragColor = texture(texture2, vTexCoord.xy);
 }
