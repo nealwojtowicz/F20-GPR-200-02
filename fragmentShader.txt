@@ -9,7 +9,9 @@ precision highp float;
 layout (location = 0) out vec4 rtFragColor; //0 represents which layer
 //alt -> out vec4 rtFragColor;
 
-//VARYING
+//UNIFORMS
+uniform sampler2D texture1;
+uniform sampler2D texture2;
 
 //PER-VERTEX: final color inbound
 in vec4 vColor;
@@ -17,8 +19,8 @@ in vec4 vColor;
 //PER-FRAGMENT: receive requirements for final color
 in vec4 vNormal;
 in vec4 vTexCoord;
-in vec3 vLight;
-in vec3 vPosition;
+in vec4 vLight;
+in vec4 vPosition;
 in float vIntensity;
 
 void main()
@@ -28,20 +30,21 @@ void main()
 	
 	//PER-FRAGMENT: calc and display
 	vec4 N = normalize(vNormal); //transfer to unit length
-	vec3 light = normalize(vLight - vPosition);
-	float diffuseCoe = max(0.0, dot(N.xyz, light));
+	vec4 L = normalize(vLight - vPosition);
+	float diffuseCoe = max(0.0, dot(N, L));
 	float dist = dot(vLight, vPosition);
 	float atten = 1.0 / (1.0 + dist/vIntensity + (dist * dist)/(vIntensity * vIntensity));
 	float diffuseInt = diffuseCoe * atten;
-	//rtFragColor = diffuseInt * N * vColor;
 	
-	vec3 halfwayVector = normalize(light + 3.0);
-	vec3 halfwayVector2 = normalize(light);
-	vec3 halfwayVector3 = normalize(light - 1.0);
-	float specularCoe = max(0.0, dot(N.xyz, halfwayVector));
-	float specularCoe2 = max(0.0, dot(N.xyz, halfwayVector2));
-	float specularCoe3 = max(0.0, dot(N.xyz, halfwayVector3));
+	vec3 H = normalize(L.xyz * L.xyz - 0.1);
+	vec3 H2 = normalize(L.xyz * L.xyz);
+	vec3 H3 = normalize(L.xyz * L.xyz - 0.2);
+	vec4 R = reflect(-L, N);
+	vec4 V = normalize(-vLight);
+	float spec = max(0.0, dot(N.xyz, H));
+	float spec2 = max(0.0, dot(N.xyz, H2));
+	float spec3 = max(0.0, dot(N.xyz, H3));
 	
-	//rtFragColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0) + (diffuseInt * N + pow(specularCoe, 64.0) * vec4(1.0, 0.0, 0.0, 1.0)) + (diffuseInt * N + pow(specularCoe3, 64.0) * vec4(1.0)) + (diffuseInt * N + pow(specularCoe2, 64.0) * vec4(1.0)) * vColor;
-	rtFragColor = vTexCoord;
+	//rtFragColor = 0.5 * vec4(0.25, 0.25, 0.5, 1.0) + diffuseInt * N * vColor + pow(spec, 64.0) * vec4(1.0, 0.0, 0.0, 1.0) + pow(spec2, 64.0) * vec4(0.0, 1.0, 0.0, 1.0) + pow(spec3, 64.0) * vec4(0.0, 0.0, 1.0, 1.0);
+	rtFragColor = texture(texture1, vTexCoord.xy);
 }

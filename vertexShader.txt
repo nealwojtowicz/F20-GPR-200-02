@@ -15,8 +15,6 @@ uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjMatrix;
 uniform mat4 uViewProjMatrix;
-uniform sampler2D texture1;
-uniform sampler2D texture2;
 
 // VARYING
 
@@ -26,8 +24,8 @@ out vec4 vColor;
 //PER-FRAGMENT: pass requirements for final color
 out vec4 vNormal;
 out vec4 vTexCoord;
-out vec3 vLight;
-out vec3 vPosition;
+out vec4 vLight;
+out vec4 vPosition;
 out float vIntensity;
 
 //FUNCTIONS AND STRUCTURES
@@ -53,7 +51,7 @@ void initPointLight(out pointLight pL, in vec3 center, in vec4 color, in float i
 void main()
 {
 	pointLight pL;
-    initPointLight(pL, vec3(1.0, 1.0, -2.0), vec4(1.0), 1000.0);
+    initPointLight(pL, vec3(1.0, 1.0, -1.0), vec4(1.0), 1000.0);
 	
 	//POSITION PIPELINE
 	mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
@@ -65,6 +63,9 @@ void main()
 	mat3 normalMat = inverse(transpose(mat3(modelViewMatrix)));
 	vec3 nrm_view = normalMat * aNormal;
 	
+	//LIGHT PIPIELINE
+	vec4 pos_light = pL.center * uViewMatrix;
+	
 	//TEXCOORD PIPELINE -> spot (4,4) always has to be 1.0
 	//scale: spots (1,1), (2,2), and (3,3)
 	//translation: spots (1,4) and (2,4)
@@ -72,12 +73,12 @@ void main()
 							0.0, 1.0, 0.0, 0.0,
 							0.0, 0.0, 1.0, 0.0,
 							0.0, 0.0, 0.0, 1.0);
-	vec4 uv_atlas = atlasMatrix * texture(texture1, aTexCoord.xy);
+	vec4 uv_atlas = atlasMatrix * aTexCoord * uViewMatrix;
 
 	//PER-FRAGMENT: output data for FS to calc final color
 	vNormal = vec4(nrm_view, 0.0);
-	vLight = pL.center.xyz;
-	vPosition = pos_clip.xyz;
+	vLight = pos_light;
+	vPosition = pos_view;
 	vIntensity = pL.intensity;
 	vColor = pL.color;
 	
