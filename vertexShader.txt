@@ -1,18 +1,32 @@
 #version 300 es
 
 layout (location = 0) in vec4 aPos;
+layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
 
 uniform mat4 uModelMatrix, uViewMatrix, uProjMatrix;
 
 out vec2 vTexcoord;
 out vec4 vPosClip;
+out vec4 vColor;
+out vec4 vNormal;
+out vec4 vLight;
+out float vIntensity;
 
 void main()
 {
 	//ORDER MATTERS \/ \/ \/ \/ \/ \/ \/
 	mat4 modelViewProjMatrix = uProjMatrix * uViewMatrix * uModelMatrix;
-	gl_Position = modelViewProjMatrix * aPos;
-	vPosClip = gl_Position;
-	vTexcoord = aTexCoord; 
+	mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
+	vPosClip = modelViewProjMatrix * aPos;
+	gl_Position = vPosClip;
+	vec4 lightPos = vec4(1.0, 1.0, -1.0, 1.0);
+	mat3 normalMat = inverse(transpose(mat3(modelViewMatrix)));
+	vec3 nrm = normalMat * aNormal;
+	
+	vNormal = vec4(nrm, 0.0);
+	vIntensity = 1000.0;
+	vLight = lightPos;
+	vColor = aPos;
+	vTexcoord = aTexCoord;
 }
