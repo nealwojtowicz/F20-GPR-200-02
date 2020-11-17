@@ -1,87 +1,18 @@
 #version 300 es
-//alt -> #version 450
 
-// MAIN DUTY: processing vertices
-//vertices:
-//3D points in space
-//normal vectors, 
-//uv: texture coordinates
-layout (location = 0) in vec4 aPosition; //0 represents which attribute
-layout (location = 1) in vec3 aNormal; //vec3 because w can't be 1
-layout (location = 2) in vec4 aTexCoord;
+layout (location = 0) in vec4 aPos;
+layout (location = 2) in vec2 aTexCoord;
 
-// TRANSFORM UNIFORMS
-uniform mat4 uModelMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjMatrix;
-uniform mat4 uViewProjMatrix;
+uniform mat4 uModelMatrix, uViewMatrix, uProjMatrix;
 
-// VARYING
-
-// PER-VERTEX: pass final color
-out vec4 vColor;
-
-//PER-FRAGMENT: pass requirements for final color
-out vec4 vNormal;
-out vec4 vTexCoord;
-out vec4 vLight;
-out vec4 vPosition;
-out float vIntensity;
-
-//FUNCTIONS AND STRUCTURES
-// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
-
-vec4 asPoint(in vec3 point)
-{
-    return vec4(point, 1.0);
-}
-struct pointLight
-{
-    vec4 center;
-    vec4 color;
-    float intensity;
-};
-void initPointLight(out pointLight pL, in vec3 center, in vec4 color, in float intensity)
-{
-    pL.center = asPoint(center);
-    pL.color = color;
-    pL.intensity = intensity;
-}
+out vec2 vTexcoord;
+out vec4 vPosClip;
 
 void main()
 {
-	pointLight pL;
-    initPointLight(pL, vec3(1.0, 1.0, -1.0), vec4(1.0), 1000.0);
-	
-	//POSITION PIPELINE
-	mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
-	vec4 pos_view = modelViewMatrix * aPosition;
-	vec4 pos_clip = uProjMatrix * pos_view;
-	gl_Position = pos_clip;
-	
-	//NORMAL PIPELINE
-	mat3 normalMat = inverse(transpose(mat3(modelViewMatrix)));
-	vec3 nrm_view = normalMat * aNormal;
-	
-	//LIGHT PIPIELINE
-	vec4 pos_light = pL.center * uViewMatrix;
-	
-	//TEXCOORD PIPELINE -> spot (4,4) always has to be 1.0
-	//scale: spots (1,1), (2,2), and (3,3)
-	//translation: spots (1,4) and (2,4)
-	mat4 atlasMatrix = mat4(1.0, 0.0, 0.0, 0.0,
-							0.0, 1.0, 0.0, 0.0,
-							0.0, 0.0, 1.0, 0.0,
-							0.0, 0.0, 0.0, 1.0);
-	vec4 uv_atlas = atlasMatrix * aTexCoord * uViewMatrix;
-
-	//PER-FRAGMENT: output data for FS to calc final color
-	vNormal = vec4(nrm_view, 0.0);
-	vLight = pos_light;
-	vPosition = pos_view;
-	vIntensity = pL.intensity;
-	vColor = pL.color;
-	
-	vTexCoord = uv_atlas;
-	//gl_Position = modelViewMatrix * uProjMatrix * aTexCoord;
+	//ORDER MATTERS \/ \/ \/ \/ \/ \/ \/
+	mat4 modelViewProjMatrix = uProjMatrix * uViewMatrix * uModelMatrix;
+	gl_Position = modelViewProjMatrix * aPos;
+	vPosClip = gl_Position;
+	vTexcoord = aTexCoord; 
 }
