@@ -15,6 +15,8 @@ out float vIntensity;
 
 void main()
 {
+	//SCENE PASS
+	
 	//ORDER MATTERS \/ \/ \/ \/ \/ \/ \/
 	mat4 modelViewProjMatrix = uProjMatrix * uViewMatrix * uModelMatrix;
 	mat4 modelViewMatrix = uViewMatrix * uModelMatrix;

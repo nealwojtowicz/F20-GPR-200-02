@@ -5,6 +5,7 @@ precision highp float;
 #endif
 
 uniform sampler2D uTex;
+uniform sampler2D uTex2;
 uniform vec2 uResolution;
 
 in vec2 vTexCoord;
@@ -14,9 +15,37 @@ layout (location = 0) out vec4 rtFragColor;
 
 void main()
 {
-	//vec2 uv = gl_FragCoord.xy / uResolution;
-	vec2 uv = vTexCoord;
+	//DISPLAY PASS
 	
+	//vec2 uv = gl_FragCoord.xy / uResolution;
 	//rtFragColor = vec4(uv, 0.0, 1.0);
-	rtFragColor = texture(uTex, uv);
+	//rtFragColor = texture(uTex, vTexCoord);
+	
+	//MANUAL PERSPECTIVE DIVIDE
+	vec4 NDC = vPosition / vPosition.w;
+	//rtFragColor = NDC;
+	// [-1, +1] contains visible space
+	
+	// SCREEN-SPACE (uv -> [0, 1] range instead)
+	vec4 uv = NDC * 0.5 + 0.5;
+	//rtFragColor = uv;
+	
+	//rtFragColor = texture(uTex, NDC.xy);
+	rtFragColor = texture(uTex, uv.xy);
+	//rtFragColor = texture(uTex2, uv.xy);
+	
+	//BLOOM PASS
+	/*
+	vec2 dir = 1.0 / uResolution;
+	//vec2 cp = NDC.xy + 0.5 * dir;
+	vec2 cp = uv.xy + 0.5 * dir;
+	vec2 cn = cp - dir;
+	
+	vec4 col = (texture(uTex, cp) + texture(uTex, cn)) * 20.0;
+	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir)) * 15.0;
+	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir)) * 6.0;
+	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir));
+	
+	rtFragColor = (col * 0.01190476);
+	*/
 }

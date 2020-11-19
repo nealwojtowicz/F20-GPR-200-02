@@ -10,6 +10,7 @@ out vec4 vPosition;
 
 void main()
 {
+	//DISPLAY PASS
 	mat4 uModelViewProjMatrix = uProjMatrix * uViewMatrix * uModelMatrix;
 	//gl_Position = uModelViewProjMatrix * aPosition;
 	gl_Position = aPosition;

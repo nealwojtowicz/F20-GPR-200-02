@@ -14,6 +14,8 @@ in vec4 vLight;
 in float vIntensity;
 
 uniform sampler2D uTex;
+uniform sampler2D uTex2;
+uniform vec2 uResolution;
 
 void main()
 {
@@ -24,44 +26,12 @@ void main()
 	float dist = dot(vLight, vPosClip);
 	float atten = 1.0 / (1.0 + dist/vIntensity + (dist * dist)/(vIntensity * vIntensity));
 	float diffInt = diffCoe * atten;
-	
-	vec3 H1 = normalize(L.xyz * L.xyz - 0.1);
-	//vec3 H2 = normalize(L.xyz * L.xyz);
-	//vec3 H3 = normalize(L.xyz * L.xyz - 0.2);
+	vec3 H1 = normalize(L.xyz * L.xyz);
 	float spec = max(0.0, dot(N.xyz, H1));
-	//float spec2 = max(0.0, dot(N.xyz, H2));
-	//float spec3 = max(0.0, dot(N.xyz, H3));
-	
 	vec4 phongModel = 0.5 * vec4(1.0, 0.5, 0.0, 1.0) + diffInt * N * vColor + pow(spec, 64.0) * vec4(1.0);
-	//vec4 phongModel = 0.5 * vec4(1.0, 0.5, 0.0, 1.0) + diffInt * N * vColor + pow(spec, 64.0) * vec4(1.0, 0.0, 0.0, 1.0) + pow(spec2, 64.0) * vec4(0.0, 1.0, 0.0, 1.0) + pow(spec3, 64.0) * vec4(0.0, 0.0, 1.0, 1.0);
 	
-	//rtFragColor = vPosClip; //solid color
-	rtFragColor = phongModel; //phong model
-	//rtFragColor = texture(uTex, vTexcoord);
-	
-	//MANUAL PERSPECTIVE DIVIDE
-	vec4 NDC = vPosClip / vPosClip.w;
-	//rtFragColor = NDC;
-	// [-1, +1] contains visible space
-	
-	// SCREEN-SPACE (uv -> [0, 1] range instead)
-	vec4 uv = NDC * 0.5 + 0.5;
-	//rtFragColor = uv;
-	
-	//take out blue
-	//rtFragColor.b = 0.0;
-	
-	//BLOOM PASS
-	/*
-	vec2 dir = 1.0 / vTexcoord;
-	vec2 cp = uv.xy + 0.5 * dir;
-	vec2 cn = cp - dir;
-	
-	vec4 col = (texture(uTex, cp) + texture(uTex, cn)) * 20.0;
-	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir)) * 15.0;
-	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir)) * 6.0;
-	col += (texture(uTex, cp += dir) + texture(uTex, cn -= dir));
-	
-	rtFragColor = (col * 0.01190476);
-	*/
+	rtFragColor = vPosClip; //solid color
+	//rtFragColor = phongModel; //phong model
+	//rtFragColor = texture(uTex, vTexcoord); //texture
+	//rtFragColor = texture(uTex2, vTexcoord); //texture
 }
