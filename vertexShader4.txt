@@ -1,0 +1,18 @@
+#version 300 es
+
+layout (location = 0) in vec4 aPosition;
+layout (location = 2) in vec2 aTexCoord;
+
+uniform mat4 uModelMatrix, uViewMatrix, uProjMatrix;
+
+out vec2 vTexCoord;
+out vec4 vPosition;
+
+void main()
+{
+	//DISPLAY PASS
+	mat4 uModelViewProjMatrix = uProjMatrix * uViewMatrix * uModelMatrix;
+	gl_Position = aPosition;
+	vPosition = gl_Position;
+	vTexCoord = aPosition.xy * 0.5 + 0.5;
+}
